@@ -1,49 +1,40 @@
-import './css/styles.css';
 import iziToast from 'izitoast';
 import 'izitoast/dist/css/iziToast.min.css';
 
-import { fetchImages } from './js/pixabay-api';
-import { renderGallery, clearGallery, showLoader, hideLoader } from './js/render-functions';
+import { getImagesByQuery } from "./js/pixabay-api";
+import { clearGallery, renderImages } from './js/render-functions';
+import { showLoader, hideLoader } from './js/loader';
 
 const form = document.querySelector('.form');
 const gallery = document.querySelector('.gallery');
 
-form.addEventListener('submit', async e => {
-  e.preventDefault();
-  const query = e.target.elements['search-text'].value.trim();
+form.addEventListener('submit', function (event) {
+    event.preventDefault();
 
-  if (!query) {
-    iziToast.error({
-      title: 'Error',
-      message: 'Please enter a search term',
-      position: 'topRight',
-    });
-    return;
-  }
+    const query = form.elements['search-text'].value.trim();
+    if (!query) return;
 
-  clearGallery();
-  showLoader(); // показати лоадер
+    clearGallery(gallery);
+    showLoader();
 
-  try {
-    const data = await fetchImages(query);
-
-    if (data.hits.length === 0) {
-      iziToast.info({
-        title: 'No Results',
-        message: 'Sorry, there are no images matching your search query. Please try again!',
-        position: 'topRight',
-      });
-      return;
-    }
-
-    renderGallery(data.hits);
-  } catch (err) {
-    iziToast.error({
-      title: 'Error',
-      message: 'Something went wrong while fetching data.',
-      position: 'topRight',
-    });
-  } finally {
-    hideLoader(); // сховати лоадер
-  }
+    getImagesByQuery(query)
+        .then(function (data) {
+            hideLoader();
+            if (data.hits.length === 0) {
+                iziToast.warning({
+                    message: 'Sorry, there are no images matching your search query. Please try again!',
+                    position: 'topRight',
+                });
+                return;
+            }
+            renderImages(data.hits, gallery);
+        })
+        .catch(function () {
+            hideLoader();
+            loader.classList.add('is-hidden');
+            iziToast.error({
+                message: 'Error!',
+                position: 'topRight',
+            });
+        });
 });
