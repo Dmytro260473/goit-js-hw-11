@@ -7,33 +7,7 @@ import { showLoader, hideLoader } from './js/loader';
 
 const form = document.querySelector('.form');
 const gallery = document.querySelector('.gallery');
-
-const searchForm = document.querySelector('.search-form');
-const gallery = document.querySelector('.gallery');
 const loader = document.querySelector('.loader');
-const pixabayAPI = new PixabayAPI(); // экземпляр класса
-
-searchForm.addEventListener('submit', async e => {
-  e.preventDefault();
-
-  const query = e.target.elements.searchQuery.value.trim();
-  if (!query) return;
-
-  loader.classList.remove('is-hidden'); // показываем loader
-
-  try {
-    pixabayAPI.query = query;
-    pixabayAPI.page = 1;
-    const data = await pixabayAPI.fetchImages();
-
-    gallery.innerHTML = '';
-    renderImages(data.hits);
-  } catch (error) {
-    console.error('Ошибка при получении данных:', error);
-  } finally {
-    loader.classList.add('is-hidden'); // скрываем loader
-  }
-});
 
 form.addEventListener('submit', function (event) {
     event.preventDefault();
@@ -58,7 +32,6 @@ form.addEventListener('submit', function (event) {
         })
         .catch(function () {
             hideLoader();
-            loader.classList.add('is-hidden');
             iziToast.error({
                 message: 'Error!',
                 position: 'topRight',
